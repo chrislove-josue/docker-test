@@ -9,44 +9,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout du code
+      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Node.js
+      # 2. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
 
-      # 3. Installation des dépendances
+      # 3. Install deps
       - name: Install dependencies
         run: npm ci
 
-      # 4. Injection des variables d’environnement
+      # 4. Install Vercel CLI
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # 5. Pull config Vercel
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # 6. Inject ENV APRÈS pull (clé ici 🔥)
       - name: Inject environment variables
         run: |
           echo "NEXT_PUBLIC_COMMIT_SHA=${GITHUB_SHA}" >> .env.production
           echo "NEXT_PUBLIC_BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> .env.production
 
-      # 5. Vérification (debug intelligent)
-      - name: Debug env
-        run: cat .env.production
-
-      # 6. Installation Vercel CLI
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      # 7. Synchronisation avec Vercel (important)
-      - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-        
-      # 8. Build contrôlé par Vercel
+      # 7. Build
       - name: Build project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      # 9. Déploiement avec build précompilé
-      - name: Deploy to Vercel
+      # 8. Deploy
+      - name: Deploy
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
