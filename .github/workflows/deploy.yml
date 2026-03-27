@@ -1,0 +1,26 @@
+# .github/workflows/deploy.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build app
+        run: npm run build
+
+      - name: Set commit SHA
+        run: echo "NEXT_PUBLIC_COMMIT_SHA=${GITHUB_SHA}" >> .env
+
+      - name: Deploy to Vercel
+        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
