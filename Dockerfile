@@ -1,6 +1,5 @@
 # ---- Builder ----
-FROM node:18-alpine AS builder
-
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copier et installer dépendances
@@ -18,7 +17,7 @@ ENV NEXT_PUBLIC_COMMIT_SHA=$NEXT_PUBLIC_COMMIT_SHA
 RUN npm run build
 
 # ---- Runner ----
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
