@@ -28,37 +28,39 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      # 5️⃣ Login to Vercel
-      - name: Login to Vercel
-        run: vercel login --token=${{ secrets.VERCEL_TOKEN }}
-
-      # 6️⃣ Pull Vercel environment
+      # 5️⃣ Pull Vercel environment
       - name: Pull Vercel environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel pull --yes --environment=production
 
-      # 7️⃣ Inject ENV variables
+      # 6️⃣ Inject ENV variables
       - name: Generate .env.production
         run: |
           echo "NEXT_PUBLIC_COMMIT_SHA=${GITHUB_SHA}" >> .env.production
           echo "NEXT_PUBLIC_BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> .env.production
 
-      # 8️⃣ Build project (Vercel)
+      # 7️⃣ Build project (Vercel)
       - name: Build project
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel build --prod
 
-      # 9️⃣ Deploy to Vercel
+      # 8️⃣ Deploy to Vercel
       - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel deploy --prebuilt --prod --yes
 
       # -----------------------------
       # Docker steps
       # -----------------------------
       
-      # 🔟 Login Docker Hub
-      - name: Login to Docker Hub
+      # 9️⃣ Login Docker Hub
+      - name: Login Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 1️⃣1️⃣ Build Docker image
+      # 1️⃣0️⃣ Build Docker image
       - name: Build Docker image
         run: |
           docker build \
@@ -66,10 +68,8 @@ jobs:
             -t ${{ secrets.DOCKER_USERNAME }}/docker-test:latest \
             -t ${{ secrets.DOCKER_USERNAME }}/docker-test:${GITHUB_SHA} .
 
-      # 1️⃣2️⃣ Push Docker images
+      # 1️⃣1️⃣ Push Docker images
       - name: Push Docker images
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/docker-test:${GITHUB_SHA}
-
-          
