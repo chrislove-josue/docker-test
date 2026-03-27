@@ -1,17 +1,25 @@
-# Étape 1 : build
+# ---- Builder ----
 FROM node:18-alpine AS builder
 
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
+
+ARG NEXT_PUBLIC_COMMIT_SHA
+ENV NEXT_PUBLIC_COMMIT_SHA=$NEXT_PUBLIC_COMMIT_SHA
+
 RUN npm run build
 
-# Étape 2 : run
+# ---- Runner ----
 FROM node:18-alpine
 
 WORKDIR /app
+
+ENV NODE_ENV=production
+
 COPY --from=builder /app ./
 
 EXPOSE 3000
